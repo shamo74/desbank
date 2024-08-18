@@ -29,53 +29,69 @@
         button:hover {
             background-color: #45a049;
         }
+        .notifications {
+            margin-top: 20px;
+        }
+        .notification {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 5px;
+            position: relative;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .notification button {
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+        .notification button:hover {
+            background-color: #d32f2f;
+        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>استقبال الأموال</h1>
-        <p id="received-amount">المبلغ المستلم: 0</p>
-        <input type="number" id="return-amount" placeholder="أدخل المبلغ لإعادته" min="0" step="0.01">
-        <button onclick="returnMoney()">إعادة الأموال</button>
+        <p id="received-amount">المبلغ المستلم: ...</p>
+        <div class="notifications" id="notifications"></div>
     </div>
     <script>
-        window.onload = function() {
-            // استرجاع المبالغ من localStorage
-            const amountToReceive = parseFloat(localStorage.getItem('amountToReceive'));
-            let receivedAmount = parseFloat(localStorage.getItem('receivedAmount')) || 0;
-
-            // إذا كان هناك مبلغ لإضافته، أضفه إلى المبلغ المستلم
-            if (!isNaN(amountToReceive)) {
-                receivedAmount += amountToReceive;
-                localStorage.setItem('receivedAmount', receivedAmount);
-                localStorage.removeItem('amountToReceive'); // إزالة المبلغ بعد الاستلام
-            }
-
-            // عرض المبلغ المستلم
-            document.getElementById('received-amount').innerText = `المبلغ المستلم: ${receivedAmount}`;
-        };
-
-        function returnMoney() {
-            const returnAmount = parseFloat(document.getElementById('return-amount').value);
-            let receivedAmount = parseFloat(document.getElementById('received-amount').innerText.replace('المبلغ المستلم: ', ''));
-
-            if (returnAmount && returnAmount > 0 && returnAmount <= receivedAmount) {
-                // تسجيل عملية الإعادة في الإشعارات الخاصة بصفحة الإرسال
-                let notificationMessage = `تمت إعادة ${returnAmount}€ إلى صفحة الإرسال.`;
-                let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-                notifications.push(notificationMessage);
-                localStorage.setItem('notifications', JSON.stringify(notifications));
-
-                // إزالة المبلغ المعاد من المبلغ المستلم
-                receivedAmount -= returnAmount;
-                localStorage.setItem('receivedAmount', receivedAmount);
-                document.getElementById('received-amount').innerText = `المبلغ المستلم: ${receivedAmount}`;
+        async function loadData() {
+            try {
+                const response = await fetch('db.json'); // جلب ملف db.json
+                const data = await response.json();
                 
-                alert('تمت إعادة الأموال بنجاح');
-            } else {
-                alert('يرجى إدخال مبلغ صحيح للإعادة');
+                // تحديث المبلغ
+                document.getElementById('received-amount').innerText = `المبلغ المستلم: ${data.amount}€`;
+
+                // عرض الإشعارات
+                const notificationsDiv = document.getElementById('notifications');
+                data.notifications.forEach(notification => {
+                    const notificationDiv = document.createElement('div');
+                    notificationDiv.className = 'notification';
+                    notificationDiv.innerHTML = `${notification} <button onclick="removeNotification(this)">حذف الإشعار</button>`;
+                    notificationsDiv.appendChild(notificationDiv);
+                });
+            } catch (error) {
+                console.error('Error loading data:', error);
             }
         }
+
+        function removeNotification(button) {
+            const notificationsDiv = document.getElementById('notifications');
+            const notificationDiv = button.parentElement;
+            notificationsDiv.removeChild(notificationDiv);
+        }
+
+        window.onload = loadData;
     </script>
 </body>
 </html>
