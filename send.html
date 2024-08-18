@@ -34,13 +34,15 @@
 <body>
     <div class="container">
         <h1>إرسال الأموال</h1>
+        <input type="number" id="amountToAdd" placeholder="أدخل المبلغ لإضافته" min="0" step="0.01">
+        <button onclick="addMoney()">إضافة الأموال</button>
         <input type="number" id="amountToSend" placeholder="أدخل المبلغ للإرسال" min="0" step="0.01">
         <button onclick="sendMoney()">إرسال</button>
         <p id="returned-amount">المبلغ المعاد: 5000</p>
         <button onclick="viewReceivePage()">عرض صفحة الاستقبال</button>
     </div>
     <script>
-        const INITIAL_AMOUNT = 5000; // المبلغ الثابت
+        const INITIAL_AMOUNT = 5000; // المبلغ الابتدائي
 
         window.onload = function() {
             let returnedAmount = parseFloat(localStorage.getItem('returnedAmount'));
@@ -50,6 +52,19 @@
             }
             document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
         };
+
+        function addMoney() {
+            const amountToAdd = parseFloat(document.getElementById('amountToAdd').value);
+            if (amountToAdd && amountToAdd > 0) {
+                let returnedAmount = parseFloat(localStorage.getItem('returnedAmount')) || 0;
+                returnedAmount += amountToAdd;
+                localStorage.setItem('returnedAmount', returnedAmount);
+                document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
+                alert('تمت إضافة الأموال بنجاح');
+            } else {
+                alert('يرجى إدخال مبلغ صحيح للإضافة');
+            }
+        }
 
         function sendMoney() {
             const amountToSend = parseFloat(document.getElementById('amountToSend').value);
