@@ -197,3 +197,59 @@
     </script>
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إرسال الأموال</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        .notifications {
+            margin-top: 20px;
+        }
+        .notification {
+            background-color: #f4f4f4;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>إرسال الأموال</h1>
+        <div class="notifications" id="transfers"></div>
+    </div>
+    <script>
+        async function loadTransfers() {
+            try {
+                const response = await fetch('http://localhost:3000/transfers');
+                const transfers = await response.json();
+
+                const transfersDiv = document.getElementById('transfers');
+                transfersDiv.innerHTML = ''; // مسح التحويلات القديمة
+                transfers.forEach(transfer => {
+                    const transferDiv = document.createElement('div');
+                    transferDiv.className = 'notification';
+                    transferDiv.innerHTML = `مبلغ ${transfer.amount}€ تمت إضافته من صفحة الاستقبال في ${transfer.timestamp}`;
+                    transfersDiv.appendChild(transferDiv);
+                });
+
+            } catch (error) {
+                console.error('Error loading transfers:', error);
+            }
+        }
+
+        window.onload = loadTransfers;
+    </script>
+</body>
+</html>
