@@ -61,20 +61,25 @@
     <div class="container">
         <h1>استقبال الأموال</h1>
         <p id="received-amount">المبلغ المستلم: ...</p>
+        <input type="number" id="return-amount-input" placeholder="أدخل المبلغ المراد إعادته">
         <button id="return-amount-btn">إعادة المبلغ إلى صفحة الإرسال</button>
         <div class="notifications" id="notifications"></div>
     </div>
     <script>
+        let currentAmount = 0;
+
         async function loadData() {
             try {
-                const response = await fetch('db.json'); // جلب ملف db.json
+                const response = await fetch('http://localhost:3000/db'); // جلب ملف db.json من json-server
                 const data = await response.json();
                 
                 // تحديث المبلغ
-                document.getElementById('received-amount').innerText = `المبلغ المستلم: ${data.amount}€`;
+                currentAmount = data.amount;
+                document.getElementById('received-amount').innerText = `المبلغ المستلم: ${currentAmount}€`;
 
                 // عرض الإشعارات
                 const notificationsDiv = document.getElementById('notifications');
+                notificationsDiv.innerHTML = ''; // مسح الإشعارات القديمة
                 data.notifications.forEach(notification => {
                     const notificationDiv = document.createElement('div');
                     notificationDiv.className = 'notification';
@@ -83,7 +88,7 @@
                 });
 
                 // تعيين المبلغ وإضافة حدث للنقر على زر إعادة المبلغ
-                document.getElementById('return-amount-btn').onclick = () => returnAmount(data.amount);
+                document.getElementById('return-amount-btn').onclick = () => returnAmount();
 
             } catch (error) {
                 console.error('Error loading data:', error);
@@ -96,24 +101,37 @@
             notificationsDiv.removeChild(notificationDiv);
         }
 
-        async function returnAmount(amount) {
+        async function returnAmount() {
+            const inputElement = document.getElementById('return-amount-input');
+            const returnAmount = parseFloat(inputElement.value);
+
+            if (isNaN(returnAmount) || returnAmount <= 0) {
+                alert('يرجى إدخال مبلغ صالح لإعادته.');
+                return;
+            }
+
+            if (returnAmount > currentAmount) {
+                alert('المبلغ الذي تريد إعادته أكبر من المبلغ المستلم.');
+                return;
+            }
+
             try {
-                // يتم طرح المبلغ وإضافة إشعار جديد
-                const newAmount = amount; // يمكنك تخصيص هذا ليتغير عند إعادة الأموال
-                const response = await fetch('db.json', {
-                    method: 'PUT',
+                const newAmount = currentAmount - returnAmount;
+                const response = await fetch('http://localhost:3000/db', {
+                    method: 'PATCH', // استخدم PATCH لتحديث جزء من البيانات
                     headers: {
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
                         amount: newAmount,
-                        notifications: [`تمت إعادة ${amount}€ إلى صفحة الإرسال`, ...notifications]
+                        notifications: [`تمت إعادة ${returnAmount}€ إلى صفحة الإرسال`, ...data.notifications]
                     })
                 });
 
                 if (response.ok) {
-                    alert(`تمت إعادة ${amount}€ إلى صفحة الإرسال بنجاح!`);
+                    alert(`تمت إعادة ${returnAmount}€ إلى صفحة الإرسال بنجاح!`);
                     loadData(); // تحديث البيانات بعد إعادة المبلغ
+                    inputElement.value = ''; // تفريغ حقل الإدخال بعد إعادة المبلغ
                 } else {
                     console.error('Failed to return the amount.');
                 }
