@@ -61,6 +61,7 @@
     <div class="container">
         <h1>استقبال الأموال</h1>
         <p id="received-amount">المبلغ المستلم: ...</p>
+        <button id="return-amount-btn">إعادة المبلغ إلى صفحة الإرسال</button>
         <div class="notifications" id="notifications"></div>
     </div>
     <script>
@@ -80,6 +81,10 @@
                     notificationDiv.innerHTML = `${notification} <button onclick="removeNotification(this)">حذف الإشعار</button>`;
                     notificationsDiv.appendChild(notificationDiv);
                 });
+
+                // تعيين المبلغ وإضافة حدث للنقر على زر إعادة المبلغ
+                document.getElementById('return-amount-btn').onclick = () => returnAmount(data.amount);
+
             } catch (error) {
                 console.error('Error loading data:', error);
             }
@@ -89,6 +94,32 @@
             const notificationsDiv = document.getElementById('notifications');
             const notificationDiv = button.parentElement;
             notificationsDiv.removeChild(notificationDiv);
+        }
+
+        async function returnAmount(amount) {
+            try {
+                // يتم طرح المبلغ وإضافة إشعار جديد
+                const newAmount = amount; // يمكنك تخصيص هذا ليتغير عند إعادة الأموال
+                const response = await fetch('db.json', {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        amount: newAmount,
+                        notifications: [`تمت إعادة ${amount}€ إلى صفحة الإرسال`, ...notifications]
+                    })
+                });
+
+                if (response.ok) {
+                    alert(`تمت إعادة ${amount}€ إلى صفحة الإرسال بنجاح!`);
+                    loadData(); // تحديث البيانات بعد إعادة المبلغ
+                } else {
+                    console.error('Failed to return the amount.');
+                }
+            } catch (error) {
+                console.error('Error returning amount:', error);
+            }
         }
 
         window.onload = loadData;
