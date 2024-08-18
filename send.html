@@ -38,6 +38,31 @@
             border-radius: 4px;
             padding: 10px;
             margin-bottom: 5px;
+            position: relative;
+        }
+        .notification button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            background-color: #f44336;
+            color: white;
+            border: none;
+            cursor: pointer;
+            padding: 5px;
+        }
+        .notification button:hover {
+            background-color: #d32f2f;
+        }
+        .search-bar {
+            margin-bottom: 20px;
+        }
+        .search-bar input {
+            width: calc(100% - 100px);
+            display: inline-block;
+        }
+        .search-bar button {
+            width: 100px;
+            display: inline-block;
         }
     </style>
 </head>
@@ -50,6 +75,10 @@
         <button onclick="sendMoney()">إرسال</button>
         <p id="added-amount">المبلغ المضاف: 0</p>
         <p id="returned-amount">المبلغ المعاد: 5000</p>
+        <div class="search-bar">
+            <input type="text" id="searchQuery" placeholder="بحث في الإشعارات">
+            <button onclick="searchNotifications()">بحث</button>
+        </div>
         <div class="notifications" id="notifications"></div>
         <button onclick="viewReceivePage()">عرض صفحة الاستقبال</button>
     </div>
@@ -86,9 +115,6 @@
                 // تحديث العرض
                 document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
                 document.getElementById('added-amount').innerText = `المبلغ المضاف: ${addedAmount}`;
-
-                // تسجيل عملية الإضافة
-                addNotification(`تمت إضافة ${amountToAdd}€ إلى المبلغ المعاد.`);
             } else {
                 alert('يرجى إدخال مبلغ صحيح للإضافة');
             }
@@ -116,7 +142,7 @@
             const notificationsDiv = document.getElementById('notifications');
             const newNotification = document.createElement('div');
             newNotification.className = 'notification';
-            newNotification.textContent = message;
+            newNotification.innerHTML = `${message} <button onclick="removeNotification(this)">حذف</button>`;
             notificationsDiv.appendChild(newNotification);
 
             // تخزين الإشعارات في localStorage
@@ -132,8 +158,34 @@
             notifications.forEach(notification => {
                 const newNotification = document.createElement('div');
                 newNotification.className = 'notification';
-                newNotification.textContent = notification;
+                newNotification.innerHTML = `${notification} <button onclick="removeNotification(this)">حذف</button>`;
                 notificationsDiv.appendChild(newNotification);
+            });
+        }
+
+        function removeNotification(button) {
+            const notificationsDiv = document.getElementById('notifications');
+            const notificationDiv = button.parentElement;
+            notificationsDiv.removeChild(notificationDiv);
+
+            // تحديث localStorage بعد حذف إشعار
+            let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+            const notificationText = button.parentElement.textContent.replace('حذف', '').trim();
+            notifications = notifications.filter(notification => notification !== notificationText);
+            localStorage.setItem('notifications', JSON.stringify(notifications));
+        }
+
+        function searchNotifications() {
+            const query = document.getElementById('searchQuery').value.toLowerCase();
+            const notifications = document.querySelectorAll('.notification');
+
+            notifications.forEach(notification => {
+                const text = notification.textContent.toLowerCase();
+                if (text.includes(query)) {
+                    notification.style.display = 'block';
+                } else {
+                    notification.style.display = 'none';
+                }
             });
         }
 
