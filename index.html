@@ -55,145 +55,43 @@
         .notification button:hover {
             background-color: #d32f2f;
         }
-        .search-bar {
-            margin-bottom: 20px;
-        }
-        .search-bar input {
-            width: calc(100% - 100px);
-            display: inline-block;
-        }
-        .search-bar button {
-            width: 100px;
-            display: inline-block;
-        }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>إرسال الأموال</h1>
-        <input type="number" id="amountToAdd" placeholder="أدخل المبلغ لإضافته" min="0" step="0.01">
-        <button onclick="addMoney()">إضافة الأموال</button>
-        <input type="number" id="amountToSend" placeholder="أدخل المبلغ للإرسال" min="0" step="0.01">
-        <button onclick="sendMoney()">إرسال</button>
-        <p id="added-amount">المبلغ المضاف: 0</p>
-        <p id="returned-amount">المبلغ المعاد: 5000</p>
-        <div class="search-bar">
-            <input type="text" id="searchQuery" placeholder="بحث في الإشعارات">
-            <button onclick="searchNotifications()">بحث</button>
-        </div>
+        <p id="received-amount">المبلغ المستلم: ...</p>
         <div class="notifications" id="notifications"></div>
-        <button onclick="viewReceivePage()">عرض صفحة الاستقبال</button>
     </div>
     <script>
-        const INITIAL_AMOUNT = 5000; // المبلغ الثابت
+        async function loadData() {
+            try {
+                const response = await fetch('db.json'); // جلب ملف db.json
+                const data = await response.json();
+                
+                // تحديث المبلغ
+                document.getElementById('received-amount').innerText = `المبلغ المستلم: ${data.amount}€`;
 
-        window.onload = function() {
-            // استرجاع المبالغ من localStorage
-            let returnedAmount = parseFloat(localStorage.getItem('returnedAmount'));
-            if (isNaN(returnedAmount)) {
-                returnedAmount = INITIAL_AMOUNT;
-                localStorage.setItem('returnedAmount', returnedAmount);
+                // عرض الإشعارات
+                const notificationsDiv = document.getElementById('notifications');
+                data.notifications.forEach(notification => {
+                    const notificationDiv = document.createElement('div');
+                    notificationDiv.className = 'notification';
+                    notificationDiv.innerHTML = `${notification} <button onclick="removeNotification(this)">حذف الإشعار</button>`;
+                    notificationsDiv.appendChild(notificationDiv);
+                });
+            } catch (error) {
+                console.error('Error loading data:', error);
             }
-
-            let addedAmount = parseFloat(localStorage.getItem('addedAmount')) || 0;
-            document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
-            document.getElementById('added-amount').innerText = `المبلغ المضاف: ${addedAmount}`;
-
-            // عرض إشعارات العمليات
-            displayNotifications();
-        };
-
-        function addMoney() {
-            const amountToAdd = parseFloat(document.getElementById('amountToAdd').value);
-            if (amountToAdd && amountToAdd > 0) {
-                let returnedAmount = parseFloat(localStorage.getItem('returnedAmount')) || 0;
-                returnedAmount += amountToAdd;
-                localStorage.setItem('returnedAmount', returnedAmount);
-
-                let addedAmount = parseFloat(localStorage.getItem('addedAmount')) || 0;
-                addedAmount += amountToAdd;
-                localStorage.setItem('addedAmount', addedAmount);
-
-                // تحديث العرض
-                document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
-                document.getElementById('added-amount').innerText = `المبلغ المضاف: ${addedAmount}`;
-            } else {
-                alert('يرجى إدخال مبلغ صحيح للإضافة');
-            }
-        }
-
-        function sendMoney() {
-            const amountToSend = parseFloat(document.getElementById('amountToSend').value);
-            let returnedAmount = parseFloat(localStorage.getItem('returnedAmount'));
-
-            if (amountToSend && amountToSend > 0 && amountToSend <= returnedAmount) {
-                returnedAmount -= amountToSend;
-                localStorage.setItem('returnedAmount', returnedAmount);
-                localStorage.setItem('amountToReceive', amountToSend);
-
-                // تسجيل عملية الإرسال
-                addNotification(`تم إرسال ${amountToSend}€ إلى الصفحة الثانية.`);
-
-                document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
-            } else {
-                alert('يرجى إدخال مبلغ صحيح للإرسال');
-            }
-        }
-
-        function addNotification(message) {
-            const notificationsDiv = document.getElementById('notifications');
-            const newNotification = document.createElement('div');
-            newNotification.className = 'notification';
-            newNotification.innerHTML = `${message} <button onclick="removeNotification(this)">حذف الإشعار</button>`;
-            notificationsDiv.appendChild(newNotification);
-
-            // تخزين الإشعارات في localStorage
-            let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-            notifications.push(message);
-            localStorage.setItem('notifications', JSON.stringify(notifications));
-        }
-
-        function displayNotifications() {
-            const notificationsDiv = document.getElementById('notifications');
-            let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-
-            notifications.forEach(notification => {
-                const newNotification = document.createElement('div');
-                newNotification.className = 'notification';
-                newNotification.innerHTML = `${notification} <button onclick="removeNotification(this)">حذف الإشعار</button>`;
-                notificationsDiv.appendChild(newNotification);
-            });
         }
 
         function removeNotification(button) {
             const notificationsDiv = document.getElementById('notifications');
             const notificationDiv = button.parentElement;
             notificationsDiv.removeChild(notificationDiv);
-
-            // تحديث localStorage بعد حذف إشعار
-            let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
-            const notificationText = button.parentElement.textContent.replace('حذف الإشعار', '').trim();
-            notifications = notifications.filter(notification => notification !== notificationText);
-            localStorage.setItem('notifications', JSON.stringify(notifications));
         }
 
-        function searchNotifications() {
-            const query = document.getElementById('searchQuery').value.toLowerCase();
-            const notifications = document.querySelectorAll('.notification');
-
-            notifications.forEach(notification => {
-                const text = notification.textContent.toLowerCase();
-                if (text.includes(query)) {
-                    notification.style.display = 'block';
-                } else {
-                    notification.style.display = 'none';
-                }
-            });
-        }
-
-        function viewReceivePage() {
-            window.location.href = 'receive.html';
-        }
+        window.onload = loadData;
     </script>
 </body>
 </html>
