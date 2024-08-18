@@ -58,16 +58,23 @@
             let receivedAmount = parseFloat(document.getElementById('received-amount').innerText.replace('المبلغ المستلم: ', ''));
 
             if (returnAmount && returnAmount > 0 && returnAmount <= receivedAmount) {
-                // تحديث المبلغ المستلم واحتسابه
+                // تسجيل عملية الإعادة
                 localStorage.setItem('returnedAmount', returnAmount);
+
+                // إزالة المبلغ المعاد من المبلغ المستلم
                 receivedAmount -= returnAmount;
                 localStorage.setItem('receivedAmount', receivedAmount);
                 document.getElementById('received-amount').innerText = `المبلغ المستلم: ${receivedAmount}`;
+                
+                // تسجيل الإشعار في صفحة الإرسال
+                let notificationMessage = `تمت إعادة ${returnAmount}€ إلى صفحة الإرسال.`;
+                let notifications = JSON.parse(localStorage.getItem('notifications')) || [];
+                notifications.push(notificationMessage);
+                localStorage.setItem('notifications', JSON.stringify(notifications));
+
                 alert('تمت إعادة الأموال بنجاح');
             } else {
                 alert('يرجى إدخال مبلغ صحيح للإعادة');
             }
         }
-    </script>
-</body>
-</html>
+    </script
