@@ -48,6 +48,7 @@
         <button onclick="addMoney()">إضافة الأموال</button>
         <input type="number" id="amountToSend" placeholder="أدخل المبلغ للإرسال" min="0" step="0.01">
         <button onclick="sendMoney()">إرسال</button>
+        <p id="added-amount">المبلغ المضاف: 0</p>
         <p id="returned-amount">المبلغ المعاد: 5000</p>
         <div class="notifications" id="notifications"></div>
         <button onclick="viewReceivePage()">عرض صفحة الاستقبال</button>
@@ -56,13 +57,16 @@
         const INITIAL_AMOUNT = 5000; // المبلغ الثابت
 
         window.onload = function() {
-            // استرجاع المبلغ المعاد من localStorage
+            // استرجاع المبالغ من localStorage
             let returnedAmount = parseFloat(localStorage.getItem('returnedAmount'));
             if (isNaN(returnedAmount)) {
                 returnedAmount = INITIAL_AMOUNT;
                 localStorage.setItem('returnedAmount', returnedAmount);
             }
+
+            let addedAmount = parseFloat(localStorage.getItem('addedAmount')) || 0;
             document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
+            document.getElementById('added-amount').innerText = `المبلغ المضاف: ${addedAmount}`;
 
             // عرض إشعارات العمليات
             displayNotifications();
@@ -74,11 +78,17 @@
                 let returnedAmount = parseFloat(localStorage.getItem('returnedAmount')) || 0;
                 returnedAmount += amountToAdd;
                 localStorage.setItem('returnedAmount', returnedAmount);
-                
-                // تسجيل عملية الإضافة
-                addNotification(`تمت إضافة ${amountToAdd}€ إلى الرصيد المعاد.`);
 
+                let addedAmount = parseFloat(localStorage.getItem('addedAmount')) || 0;
+                addedAmount += amountToAdd;
+                localStorage.setItem('addedAmount', addedAmount);
+
+                // تحديث العرض
                 document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
+                document.getElementById('added-amount').innerText = `المبلغ المضاف: ${addedAmount}`;
+
+                // تسجيل عملية الإضافة
+                addNotification(`تمت إضافة ${amountToAdd}€ إلى المبلغ المعاد.`);
             } else {
                 alert('يرجى إدخال مبلغ صحيح للإضافة');
             }
