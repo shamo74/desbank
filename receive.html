@@ -67,11 +67,12 @@
     </div>
     <script>
         let currentAmount = 0;
+        let data = { amount: 0, notifications: [] };
 
         async function loadData() {
             try {
-                const response = await fetch('https://raw.githubusercontent.com/shamo74/desbank/main/db.json'); // جلب ملف db.json من json-server
-                const data = await response.json();
+                const response = await fetch('http://localhost:3000/db'); // جلب ملف db.json من json-server
+                data = await response.json();
                 
                 // تحديث المبلغ
                 currentAmount = data.amount;
@@ -129,6 +130,18 @@
                 });
 
                 if (response.ok) {
+                    // إرسال المبلغ إلى صفحة الإرسال عبر طلب HTTP
+                    await fetch('http://localhost:3000/transfer', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            amount: returnAmount,
+                            timestamp: new Date().toISOString()
+                        })
+                    });
+
                     alert(`تمت إعادة ${returnAmount}€ إلى صفحة الإرسال بنجاح!`);
                     loadData(); // تحديث البيانات بعد إعادة المبلغ
                     inputElement.value = ''; // تفريغ حقل الإدخال بعد إعادة المبلغ
