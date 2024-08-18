@@ -43,7 +43,6 @@
             const amountToReceive = parseFloat(localStorage.getItem('amountToReceive'));
             let receivedAmount = parseFloat(localStorage.getItem('receivedAmount')) || 0;
 
-            // إذا كان هناك مبلغ لإضافته، أضفه إلى المبلغ المستلم
             if (!isNaN(amountToReceive)) {
                 receivedAmount += amountToReceive;
                 localStorage.setItem('receivedAmount', receivedAmount);
@@ -57,9 +56,8 @@
             const returnAmount = parseFloat(document.getElementById('return-amount').value);
             let receivedAmount = parseFloat(document.getElementById('received-amount').innerText.replace('المبلغ المستلم: ', ''));
 
-            // تحقق من صحة المبلغ المُدخل ومطابقته للمبلغ المستلم
             if (returnAmount && returnAmount > 0 && returnAmount <= receivedAmount) {
-                // تحديث المبلغ المستلم وإضافة المبلغ المعاد
+                // تحديث المبلغ المعاد واحتسابه
                 localStorage.setItem('returnedAmount', returnAmount);
                 receivedAmount -= returnAmount;
                 localStorage.setItem('receivedAmount', receivedAmount);
