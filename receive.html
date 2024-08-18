@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>استقبال الأموال</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>استقبال الأموال</h1>
+        <p id="received-amount">المبلغ المستلم: 0</p>
+        <input type="number" id="return-amount" placeholder="أدخل المبلغ لإعادته" min="0" step="0.01">
+        <button onclick="returnMoney()">إعادة الأموال</button>
+    </div>
+    <script>
+        window.onload = function() {
+            const amountToReceive = parseFloat(localStorage.getItem('amountToReceive'));
+            let receivedAmount = parseFloat(localStorage.getItem('receivedAmount')) || 0;
+
+            // إذا كان هناك مبلغ لإضافته، أضفه إلى المبلغ المستلم
+            if (!isNaN(amountToReceive)) {
+                receivedAmount += amountToReceive;
+                localStorage.setItem('receivedAmount', receivedAmount);
+                localStorage.removeItem('amountToReceive'); // إزالة المبلغ بعد الاستلام
+            }
+
+            document.getElementById('received-amount').innerText = `المبلغ المستلم: ${receivedAmount}`;
+        };
+
+        function returnMoney() {
+            const returnAmount = parseFloat(document.getElementById('return-amount').value);
+            let receivedAmount = parseFloat(document.getElementById('received-amount').innerText.replace('المبلغ المستلم: ', ''));
+
+            // تحقق من صحة المبلغ المُدخل ومطابقته للمبلغ المستلم
+            if (returnAmount && returnAmount > 0 && returnAmount <= receivedAmount) {
+                // تحديث المبلغ المستلم وإضافة المبلغ المعاد
+                localStorage.setItem('returnedAmount', returnAmount);
+                receivedAmount -= returnAmount;
+                localStorage.setItem('receivedAmount', receivedAmount);
+                document.getElementById('received-amount').innerText = `المبلغ المستلم: ${receivedAmount}`;
+                alert('تمت إعادة الأموال بنجاح');
+            } else {
+                alert('يرجى إدخال مبلغ صحيح للإعادة');
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إرسال الأموال</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+        input, button {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 16px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>إرسال الأموال</h1>
+        <input type="number" id="amountToSend" placeholder="أدخل المبلغ للإرسال" min="0" step="0.01">
+        <button onclick="sendMoney()">إرسال</button>
+        <p id="returned-amount">المبلغ المعاد: 5000</p>
+        <button onclick="viewReceivePage()">عرض صفحة الاستقبال</button>
+    </div>
+    <script>
+        const INITIAL_AMOUNT = 5000; // المبلغ الثابت
+
+        window.onload = function() {
+            let returnedAmount = parseFloat(localStorage.getItem('returnedAmount'));
+            if (isNaN(returnedAmount)) {
+                returnedAmount = INITIAL_AMOUNT;
+                localStorage.setItem('returnedAmount', returnedAmount);
+            }
+            document.getElementById('returned-amount').innerText = `المبلغ المعاد: ${returnedAmount}`;
+        };
+
+        function sendMoney() {
+            const amountToSend = parseFloat(document.getElementById('amountToSend').value);
+            let returnedAmount = parseFloat(localStorage.getItem('returnedAmount'));
+
+            if (amountToSend && amountToSend > 0 && amountToSend <= returnedAmount) {
+                returnedAmount -= amountToSend;
+                localStorage.setItem('returnedAmount', returnedAmount); // تحديث المبلغ المعاد
+                localStorage.setItem('amountToReceive', amountToSend); // تخزين المبلغ لإرساله إلى الصفحة الثانية
+                alert('تم إرسال المبلغ بنجاح');
+            } else {
+                alert('يرجى إدخال مبلغ صحيح للإرسال');
+            }
+        }
+
+        function viewReceivePage() {
+            window.location.href = 'receive.html';
+        }
+    </script>
+</body>
+</html>
